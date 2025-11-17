@@ -1,5 +1,7 @@
 ## ClinicPulse AI
 
+![ClinicPulse AI Flow](./diagrams/multi-agent-ai.png)
+
 ClinicPulse AI is a smart clinic flow manager that coordinates patient intake, triage, and clinician briefing using a multi-agent architecture powered by Google's Agent Development Kit (ADK). The goal is to reduce bottlenecks in outpatient clinics by giving every care team member up-to-date context before a consultation begins.
 
 ### Problem
