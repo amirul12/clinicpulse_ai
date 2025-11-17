@@ -77,6 +77,54 @@ Upcoming tasks:
 - [x] Populate `requirements.txt` with ADK + testing deps.
 - [x] Implement config + tool stubs.
 - [x] Build sub-agent logic and validation loops.
-- [ ] Add evaluation harness + documentation updates.
+- [x] Add evaluation harness + documentation updates.
+
+## Getting Started
+
+### Requirements
+
+- Python 3.11+
+- Access to Google ADK-compatible credentials (Vertex AI or AI Studio API key)
+
+Install dependencies:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Copy `.env` and populate the appropriate credentials:
+
+```bash
+cp .env .env.local  # optional
+```
+
+Set `GOOGLE_GENAI_USE_VERTEXAI=True` with ADC or switch to AI Studio using `GOOGLE_API_KEY`.
+
+### Running the Agent Locally
+
+1. Configure credentials as above.
+2. Launch ADK web runner from the project root:
+
+```bash
+adk web
+```
+
+3. Interact with ClinicPulse AI through the UI or via the integration harness:
+
+```bash
+python -m tests.test_agent
+```
+
+### Evaluation Harness
+
+After generating a clinician briefing, point the rubric script at the Markdown file:
+
+```bash
+python -m eval.evaluate_briefing --file path/to/briefing.md
+```
+
+The script outputs a JSON summary with structure, completeness, safety scores, and a total. Use it to gate submissions before sharing with clinicians.
 
 This README will grow with installation instructions, diagrams, and scoring notes once implementation progresses.
