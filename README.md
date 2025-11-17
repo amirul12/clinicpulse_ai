@@ -12,13 +12,14 @@ Smaller clinics still rely on manual questioning, paper forms, and ad-hoc note t
 
 ### Solution
 
-ClinicPulse AI orchestrates a three-stage pipeline:
+ClinicPulse AI orchestrates a multi-stage pipeline:
 
 1. **Intake Agent** – Collects demographics, chief complaints, and symptom duration. Uses a loop validator to ensure all mandatory fields are captured before handing off.
 2. **Triage Agent** – Prioritizes queues using guideline lookups (Google Search tool) and custom EHR tools to pull vitals/lab history.
-3. **Clinician Briefing Agent** – Generates a concise patient dossier with recommended next steps, outstanding orders, and suggested follow-up questions.
+3. **Lab Wait Agent** – When diagnostics are pending, this loop agent pauses the workflow until lab data is provided, demonstrating long-running operations and resume support.
+4. **Clinician Briefing Agent** – Generates a concise patient dossier with recommended next steps, outstanding orders, and suggested follow-up questions.
 
-Session memory keeps a shared patient dossier so every agent reads/writes from the same state. Observability hooks emit structured logs (think: patient_id, step, result) for compliance audits.
+Session memory keeps a shared patient dossier so every agent reads/writes from the same state. Observability hooks emit structured logs (think: patient_id, step, result) using `clinicpulse.logging_utils` for compliance audits.
 
 ### Planned Capstone Features
 
@@ -35,6 +36,7 @@ Session memory keeps a shared patient dossier so every agent reads/writes from t
 ```
 User → Intake Orchestrator (LoopAgent)
       → Triage Coordinator (LoopAgent with Google Search + EHR Tool)
+      → Lab Wait Loop (pause/resume until labs uploaded)
       → Clinician Briefing Ensemble (parallel sub-agents: History Synthesizer, Lab Reviewer, Risk Checker)
       → Output dossier + optional notifications
 ```
@@ -56,6 +58,7 @@ clinicpulse_ai/
 │   ├── agent.py
 │   ├── config.py
 │   ├── tools.py
+│   ├── logging_utils.py
 │   ├── agent_utils.py
 │   ├── validation/
 │   │   ├── __init__.py
@@ -64,7 +67,11 @@ clinicpulse_ai/
 │       ├── __init__.py
 │       ├── intake.py
 │       ├── triage.py
+│       ├── labs.py
 │       └── briefing.py
+├── eval/
+│   ├── README.md
+│   └── evaluate_briefing.py
 ├── tests/
 │   ├── README.md
 │   └── test_agent.py
@@ -126,5 +133,10 @@ python -m eval.evaluate_briefing --file path/to/briefing.md
 ```
 
 The script outputs a JSON summary with structure, completeness, safety scores, and a total. Use it to gate submissions before sharing with clinicians.
+
+### Observability & Pause/Resume
+
+- **Logging** – All tools and validation checkers log structured events through `clinicpulse.logging_utils`. Set `CLINICPULSE_LOG_LEVEL=DEBUG` (environment variable) to increase verbosity while debugging conversations.
+- **Long-running labs** – When diagnostics are outstanding, trigger the `lab_wait_loop`. It keeps the session alive but blocks progression until `lab_results` are written to state, effectively pausing the agent until the user supplies the necessary data. The `wait_for_lab_results` tool mirrors this behavior when called directly.
 
 This README will grow with installation instructions, diagrams, and scoring notes once implementation progresses.

@@ -6,7 +6,7 @@ from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
 
 from .config import config
-from .sub_agents import briefing_ensemble, intake_loop, triage_loop
+from .sub_agents import briefing_ensemble, intake_loop, lab_wait_loop, triage_loop
 from .tools import fetch_patient_records, record_triage_decision, wait_for_lab_results
 
 
@@ -19,8 +19,8 @@ clinicpulse_agent = Agent(
 
     1. **Intake** – Call `intake_loop` to ensure patient demographics, symptoms, and duration are in state (`patient_intake`).
     2. **Triage** – Invoke `triage_loop` to prioritize the patient. Encourage the sub-agent to leverage Google Search and `record_triage_decision` when necessary.
-    3. **Clinician Briefing** – Run `briefing_ensemble` to create a Markdown dossier using the `clinician_briefing` key.
-    4. Offer to pause if labs or imaging are pending. Resume by calling `wait_for_lab_results` or re-running sub-agents once data arrives.
+    3. **Labs (Conditional)** – When diagnostics are pending, call `lab_wait_loop`. It keeps the workflow paused until `lab_results` are completed, showcasing long-running support. You may also call `wait_for_lab_results` to explicitly signal the pause.
+    4. **Clinician Briefing** – Run `briefing_ensemble` to create a Markdown dossier using the `clinician_briefing` key.
     5. Provide observability cues in your responses (e.g., "[Intake complete]"), and summarize outstanding questions for the care team.
 
     You can use tools directly when needed:
@@ -33,6 +33,7 @@ clinicpulse_agent = Agent(
     sub_agents=[
         intake_loop,
         triage_loop,
+        lab_wait_loop,
         briefing_ensemble,
     ],
     tools=[
