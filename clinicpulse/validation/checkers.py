@@ -99,11 +99,13 @@ class AppointmentValidationChecker(BaseAgent):
             yield Event(author=self.name)
             return
 
-        required_fields = {"appointment_id", "doctor", "datetime"}
+        # Required fields for a complete appointment
+        required_fields = {"patient_id", "appointment_id", "doctor", "datetime"}
 
         if hasattr(appointment, "keys"):
             # When appointment stores structured data
-            if required_fields.issubset(appointment.keys()):
+            missing_fields = required_fields - set(appointment.keys())
+            if not missing_fields:
                 log_event(
                     "appointment_validation",
                     f"appointment validated: {appointment.get('appointment_id')}",
@@ -111,13 +113,20 @@ class AppointmentValidationChecker(BaseAgent):
                 )
                 yield Event(author=self.name, actions=EventActions(escalate=True))
                 return
+            else:
+                log_event(
+                    "appointment_validation",
+                    f"missing required fields: {missing_fields}",
+                    appointment.get("patient_id"),
+                )
         else:
             # Fall back to text inspection
             text = str(appointment).lower()
-            if all(field in text for field in ("appointment", "doctor", "datetime")):
+            if all(field in text for field in ("appointment", "doctor", "datetime", "patient")):
                 log_event("appointment_validation", "text appointment validated")
                 yield Event(author=self.name, actions=EventActions(escalate=True))
                 return
 
         log_event("appointment_validation", "validation failed, retrying")
         yield Event(author=self.name)
+

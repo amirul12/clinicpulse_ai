@@ -14,7 +14,8 @@ ClinicPulse AI is built with Google Agent Development Kit (ADK). The orchestrato
 1. **Intake Agent** – Collects demographics, symptoms, duration, and relevant history until validation passes.
 2. **Triage Agent** – Uses Google Search + custom EHR tools to prioritize the visit and log rationale.
 3. **Lab Wait Agent** – Demonstrates long-running operations by pausing the workflow until lab results are provided and validated.
-4. **Clinician Briefing Agent** – Produces a Markdown dossier (Overview, Vitals, Risk, Next Steps) with recommended questions for the doctor.
+4. **Appointment Scheduling Agent** – Books doctor appointments based on triage priority, checks availability, and sends confirmations to patients.
+5. **Clinician Briefing Agent** – Produces a Markdown dossier (Overview, Vitals, Risk, Next Steps) with recommended questions for the doctor.
 
 All agents read/write to shared ADK session state; observability hooks record structured logs for compliance audits. A rubric-based evaluator ensures final briefings meet a minimum quality bar.
 
@@ -22,10 +23,10 @@ All agents read/write to shared ADK session state; observability hooks record st
 
 | Feature Requirement | Implementation Detail |
 | --- | --- |
-| Multi-agent system | Sequential pipeline of LoopAgents (`intake_loop`, `triage_loop`, `lab_wait_loop`) plus the `clinician_briefing` agent orchestrated in `clinicpulse/agent.py`. |
-| Tools | Combination of built-in Google Search and custom FunctionTools (`fetch_patient_records`, `record_triage_decision`, `wait_for_lab_results`). |
+| Multi-agent system | Sequential pipeline of LoopAgents (`intake_loop`, `triage_loop`, `lab_wait_loop`, `appointment_loop`) plus the `clinician_briefing` agent orchestrated in `clinicpulse/agent.py`. |
+| Tools | Combination of built-in Google Search and custom FunctionTools (`fetch_patient_records`, `record_triage_decision`, `wait_for_lab_results`, `check_doctor_availability`, `book_appointment`, `send_appointment_confirmation`). |
 | Long-running operations | `lab_wait_loop` holds the conversation until `lab_results` are available; `wait_for_lab_results` tool signals pauses/resume. |
-| Sessions & Memory | `InMemorySessionService` keeps shared state keys (`patient_intake`, `triage_priority`, `lab_results`, `clinician_briefing`). |
+| Sessions & Memory | `InMemorySessionService` keeps shared state keys (`patient_intake`, `triage_priority`, `lab_results`, `appointment_details`, `clinician_briefing`). |
 | Observability | `clinicpulse/logging_utils.py` captures structured logs with optional `CLINICPULSE_LOG_LEVEL`. Tools and validators emit telemetry for each step. |
 | Agent evaluation | `eval/evaluate_briefing.py` scores generated dossiers on structure, clinical completeness, and safety awareness before delivery. |
 
@@ -89,6 +90,36 @@ All agents read/write to shared ADK session state; observability hooks record st
 └─────────────────────────────────────────────────────────────────────────────┘
                                            │
                                            │ triage complete
+                                           ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      appointment_loop  (Loop Agent)                         │
+│                                                                             │
+│   ┌─────────────────────────────┐          ┌─────────────────────────────┐  │
+│   │  appointment_scheduler      │ ───────► │  appointment_validator      │  │
+│   │  - extracts patient_id      │          │  - checks required fields   │  │
+│   │  - checks availability      │ ◄─────── │  - validates booking        │  │
+│   │  - books appointment        │          │  - ensures confirmation     │  │
+│   │  - sends confirmation       │          └─────────────────────────────┘  │
+│   └─────────────────────────────┘                                           │
+│                                                                             │
+│   External tools used by appointment_scheduler:                            │
+│                                                                             │
+│      ┌────────────────────────┐       ┌────────────────────────┐            │
+│      │ check_doctor_          │       │  book_appointment      │            │
+│      │ availability           │       │  - creates booking     │            │
+│      │ - finds slots by       │       │  - generates ID        │            │
+│      │   specialty/urgency    │       └────────────────────────┘            │
+│      └────────────────────────┘                                             │
+│                                        ┌────────────────────────┐            │
+│                                        │ send_appointment_      │            │
+│                                        │ confirmation           │            │
+│                                        │ - notifies patient     │            │
+│                                        └────────────────────────┘            │
+│                                                                             │
+│     loop until: patient_id + appointment_id + doctor + datetime complete   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                           │
+                                           │ appointment booked
                                            ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         clinician_briefing (Agent)                          │
