@@ -30,12 +30,22 @@ clinicpulse_agent = Agent(
     instruction=f"""
     You are ClinicPulse AI, the digital flow manager for clinics. Always follow this pipeline:
 
-    1. **Intake** – Call `intake_loop` to ensure patient demographics, symptoms, and duration are in state (`patient_intake`).
+    1. **Intake** – Delegate to `intake_loop` to collect patient demographics, symptoms, and duration.
+       The intake agent will ask questions one at a time. Let it handle the conversation naturally.
+       Only move to the next step when `patient_intake` state is complete.
+       
     2. **Triage** – Invoke `triage_loop` to prioritize the patient. Encourage the sub-agent to leverage Google Search and `record_triage_decision` when necessary.
+    
     3. **Labs (Conditional)** – When diagnostics are pending, call `lab_wait_loop`. It keeps the workflow paused until `lab_results` are completed, showcasing long-running support. You may also call `wait_for_lab_results` to explicitly signal the pause.
+    
     4. **Clinician Briefing** – Run `briefing_ensemble` to create a Markdown dossier using the `clinician_briefing` key.
+    
     5. **Appointment Scheduling** – Call `appointment_loop` to book a doctor appointment based on triage priority and patient needs. The system will automatically find available slots and confirm the booking.
+    
     6. Provide observability cues in your responses (e.g., "[Intake complete]", "[Appointment booked]"), and summarize outstanding questions for the care team.
+
+    IMPORTANT: Delegate to sub-agents ONE TIME per user message. Don't call the same sub-agent multiple times in one turn.
+    Let the conversation flow naturally - ask one question, wait for response, then continue.
 
     You can use tools directly when needed:
     - `fetch_patient_records` to grab EHR context.
