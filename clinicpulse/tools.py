@@ -59,7 +59,7 @@ def wait_for_lab_results(patient_id: str) -> Dict[str, str]:
 
 
 def check_doctor_availability(
-    specialty: str, urgency_level: str, preferred_date: str = None
+    specialty: str, urgency_level: str, preferred_date: str | None = None
 ) -> Dict[str, any]:
     """Check available doctors and their appointment slots (mock implementation)."""
 
