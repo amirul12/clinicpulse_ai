@@ -85,3 +85,39 @@ class LabResultsValidationChecker(BaseAgent):
             return
         log_event("lab_validation", "awaiting lab input")
         yield Event(author=self.name)
+
+
+class AppointmentValidationChecker(BaseAgent):
+    """Validates that appointment booking is complete."""
+
+    async def _run_async_impl(
+        self, context: InvocationContext
+    ) -> AsyncGenerator[Event, None]:
+        appointment = context.session.state.get("appointment_details")
+        if not appointment:
+            log_event("appointment_validation", "missing appointment_details state")
+            yield Event(author=self.name)
+            return
+
+        required_fields = {"appointment_id", "doctor", "datetime"}
+
+        if hasattr(appointment, "keys"):
+            # When appointment stores structured data
+            if required_fields.issubset(appointment.keys()):
+                log_event(
+                    "appointment_validation",
+                    f"appointment validated: {appointment.get('appointment_id')}",
+                    appointment.get("patient_id"),
+                )
+                yield Event(author=self.name, actions=EventActions(escalate=True))
+                return
+        else:
+            # Fall back to text inspection
+            text = str(appointment).lower()
+            if all(field in text for field in ("appointment", "doctor", "datetime")):
+                log_event("appointment_validation", "text appointment validated")
+                yield Event(author=self.name, actions=EventActions(escalate=True))
+                return
+
+        log_event("appointment_validation", "validation failed, retrying")
+        yield Event(author=self.name)
