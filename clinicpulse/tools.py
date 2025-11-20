@@ -3,7 +3,7 @@
 import random
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .logging_utils import log_event
 
@@ -59,9 +59,17 @@ def wait_for_lab_results(patient_id: str) -> Dict[str, str]:
 
 
 def check_doctor_availability(
-    specialty: str, urgency_level: str, preferred_date: str | None = None
+    specialty: str, urgency_level: str
 ) -> Dict[str, any]:
-    """Check available doctors and their appointment slots (mock implementation)."""
+    """Check available doctors and their appointment slots (mock implementation).
+    
+    Args:
+        specialty: Medical specialty (e.g., 'cardiology', 'general')
+        urgency_level: Patient urgency ('critical', 'urgent', 'routine')
+    
+    Returns:
+        Dictionary with available_slots, doctor, and specialty
+    """
 
     log_event("check_doctor_availability", f"specialty={specialty}, urgency={urgency_level}")
 
