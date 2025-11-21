@@ -45,7 +45,8 @@ class AgentConfiguration:
     """Models and knobs used across ClinicPulse AI."""
 
     worker_model: str = "gemini-2.5-flash"
-    critic_model: str = "gemini-2.5-pro"
+    critic_model: str = "gemini-2.5-flash"
+        # critic_model: str = "gemini-2.5-pro"
     guideline_search_iterations: int = 3
 
 

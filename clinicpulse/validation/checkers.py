@@ -37,9 +37,14 @@ class IntakeValidationChecker(BaseAgent):
             # Fall back to text inspection to avoid AttributeError on strings
             text = str(dossier).lower()
             # Check for all required information in text format
-            has_symptoms = "symptom" in text or "fever" in text or "pain" in text
+            has_symptoms = "symptom" in text or "fever" in text or "pain" in text or "cough" in text
             has_duration = "duration" in text or "day" in text or "week" in text or "started" in text
-            has_history = "history" in text or "medical" in text or "condition" in text or "diabetes" in text or "disease" in text
+            # Accept medical conditions OR explicit "none"/"no" for history
+            has_history = (
+                "history" in text or "medical" in text or "condition" in text or 
+                "diabetes" in text or "disease" in text or "hypertension" in text or
+                "none" in text or ("no" in text and "chronic" in text)
+            )
             
             if has_symptoms and has_duration and has_history:
                 log_event("intake_validation", "text dossier validated with history")
