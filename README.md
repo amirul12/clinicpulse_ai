@@ -212,5 +212,3 @@ The script outputs a JSON summary with structure, completeness, safety scores, a
 
 - **Logging** – All tools and validation checkers log structured events through `clinicpulse.logging_utils`. Set `CLINICPULSE_LOG_LEVEL=DEBUG` (environment variable) to increase verbosity while debugging conversations.
 - **Long-running labs** – When diagnostics are outstanding, trigger the `lab_wait_loop`. It keeps the session alive but blocks progression until `lab_results` are written to state, effectively pausing the agent until the user supplies the necessary data. The `wait_for_lab_results` tool mirrors this behavior when called directly.
-
-This README will grow with installation instructions, diagrams, and scoring notes once implementation progresses.

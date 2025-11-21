@@ -1,7 +1,7 @@
 """Clinician briefing agent definitions."""
 
 from google.adk.agents import Agent
-from google.adk.tools import FunctionTool, google_search
+from google.adk.tools import FunctionTool
 
 from ..agent_utils import suppress_output_callback
 from ..config import config
@@ -18,7 +18,6 @@ briefing_ensemble = Agent(
     Highlight missing information and propose clarifying questions for the clinician.
     """,
     tools=[
-        google_search,
         FunctionTool(fetch_patient_records),
         FunctionTool(wait_for_lab_results),
     ],

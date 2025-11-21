@@ -21,7 +21,7 @@ class IntakeValidationChecker(BaseAgent):
             yield Event(author=self.name)
             return
 
-        required_fields = {"patient_id", "symptoms", "duration"}
+        required_fields = {"patient_id", "symptoms", "duration", "history"}
 
         if hasattr(dossier, "keys"):
             # When intake stores structured data
@@ -36,8 +36,13 @@ class IntakeValidationChecker(BaseAgent):
         else:
             # Fall back to text inspection to avoid AttributeError on strings
             text = str(dossier).lower()
-            if all(field in text for field in ("symptom", "duration")):
-                log_event("intake_validation", "text dossier validated")
+            # Check for all required information in text format
+            has_symptoms = "symptom" in text or "fever" in text or "pain" in text
+            has_duration = "duration" in text or "day" in text or "week" in text or "started" in text
+            has_history = "history" in text or "medical" in text or "condition" in text or "diabetes" in text or "disease" in text
+            
+            if has_symptoms and has_duration and has_history:
+                log_event("intake_validation", "text dossier validated with history")
                 yield Event(author=self.name, actions=EventActions(escalate=True))
                 return
 

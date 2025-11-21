@@ -1,7 +1,7 @@
 """Triage agent definitions."""
 
 from google.adk.agents import Agent, LoopAgent
-from google.adk.tools import FunctionTool, google_search
+from google.adk.tools import FunctionTool
 
 from ..agent_utils import suppress_output_callback
 from ..config import config
@@ -14,16 +14,17 @@ triage_agent = Agent(
     model=config.critic_model,
     description="Assigns priority levels using guidelines and tools.",
     instruction="""
-    You are a clinical triage nurse. Review the `patient_intake` state, optionally
-    run Google Search to confirm protocol, call tools like `record_triage_decision`,
-    then write the triage summary to the `triage_priority` key with fields:
+    You are a clinical triage nurse. Review the `patient_intake` state and use your
+    medical knowledge to assign priority. Call `fetch_patient_records` for history,
+    then call `record_triage_decision` to log the decision.
+    
+    Write the triage summary to the `triage_priority` key with fields:
       - patient_id
       - priority_level (Critical | Urgent | Routine)
       - rationale
       - recommended_next_steps
     """,
     tools=[
-        google_search,
         FunctionTool(fetch_patient_records),
         FunctionTool(record_triage_decision),
     ],

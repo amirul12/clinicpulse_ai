@@ -181,7 +181,7 @@ These metrics can be extended with automated prompts (e.g., model graders) in fu
 
 ## 9. Repository Links
 
-- **GitHub:** *(replace with final public repository URL when submitting)*
+- **GitHub:** `https://github.com/[your-username]/clinicpulse_ai` *(update before submission)*
 - **Demo Video (Optional):** *(add YouTube link if produced for bonus points)*
 
 ClinicPulse AI demonstrates how multi-agent workflows, observability, and pause/resume operations can make clinical intake safer, faster, and more consistent—fulfilling the Agents for Good track mission.
