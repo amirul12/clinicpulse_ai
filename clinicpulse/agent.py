@@ -68,11 +68,11 @@ clinicpulse_agent = Agent(
     Be concise and professional. Today's date: {datetime.datetime.now().strftime("%Y-%m-%d")}
     """,
     sub_agents=[
-        intake_loop,
-        triage_loop,
-        lab_wait_loop,
-        briefing_ensemble,
-        appointment_loop,
+        intake_loop,          # Step 1: Collect patient information
+        triage_loop,          # Step 2: Assess priority level
+        appointment_loop,     # Step 3: Schedule doctor appointment
+        briefing_ensemble,    # Step 4: Generate clinician briefing
+        lab_wait_loop,        # Step 5: Optional - wait for lab results if needed
     ],
     tools=[
         FunctionTool(fetch_patient_records),
