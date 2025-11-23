@@ -16,9 +16,12 @@ class IntakeValidationChecker(BaseAgent):
         self, context: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         dossier = context.session.state.get("patient_intake")
+        
+        # If no data exists yet (initial greeting), pass validation
+        # This prevents the loop from retrying when the user just says "Hello"
         if not dossier:
-            log_event("intake_validation", "missing patient_intake state")
-            yield Event(author=self.name)
+            log_event("intake_validation", "no patient_intake data yet - allowing intake to continue")
+            yield Event(author=self.name, actions=EventActions(escalate=True))
             return
 
         required_fields = {"patient_id", "symptoms", "duration", "history"}
