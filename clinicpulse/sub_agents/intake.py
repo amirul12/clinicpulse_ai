@@ -51,5 +51,5 @@ intake_loop = LoopAgent(
         intake_agent,
         IntakeValidationChecker(name="intake_validator"),
     ],
-    max_iterations=3,  # Allow retries if validation fails, but improved validation prevents loops
+    max_iterations=1,  # Only run once per user message to prevent multiple responses
 )

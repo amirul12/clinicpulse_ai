@@ -17,24 +17,31 @@ class IntakeValidationChecker(BaseAgent):
     ) -> AsyncGenerator[Event, None]:
         dossier = context.session.state.get("patient_intake")
         
-        # If no data exists yet (initial greeting), pass validation
-        # This prevents the loop from retrying when the user just says "Hello"
+        # If no data exists yet, DON'T escalate - wait for next user message
+        # This prevents the loop from re-running the agent multiple times
         if not dossier:
-            log_event("intake_validation", "no patient_intake data yet - allowing intake to continue")
-            yield Event(author=self.name, actions=EventActions(escalate=True))
+            log_event("intake_validation", "no patient_intake data yet - waiting for user input")
+            yield Event(author=self.name)  # NO escalate - just wait
             return
 
         required_fields = {"patient_id", "symptoms", "duration", "history"}
 
         if hasattr(dossier, "keys"):
             # When intake stores structured data
+            # ONLY escalate when ALL required fields are present
             if required_fields.issubset(dossier.keys()):
                 log_event(
                     "intake_validation",
-                    "intake dossier validated",
+                    "intake dossier validated - all fields present",
                     dossier.get("patient_id"),
                 )
                 yield Event(author=self.name, actions=EventActions(escalate=True))
+                return
+            else:
+                # Data exists but incomplete - log missing fields
+                missing = required_fields - set(dossier.keys())
+                log_event("intake_validation", f"incomplete data - missing: {missing}")
+                yield Event(author=self.name)  # NO escalate - retry
                 return
         else:
             # Fall back to text inspection to avoid AttributeError on strings
