@@ -46,15 +46,29 @@ class IntakeValidationChecker(BaseAgent):
         else:
             # Fall back to text inspection to avoid AttributeError on strings
             text = str(dossier).lower()
+            
             # Check for all required information in text format
-            has_symptoms = "symptom" in text or "fever" in text or "pain" in text or "cough" in text
-            has_duration = "duration" in text or "day" in text or "week" in text or "started" in text
-            # Accept medical conditions OR explicit "none"/"no" for history
-            has_history = (
-                "history" in text or "medical" in text or "condition" in text or 
-                "diabetes" in text or "disease" in text or "hypertension" in text or
-                "none" in text or ("no" in text and "chronic" in text)
-            )
+            # Symptoms: look for common symptom words or pain/discomfort indicators
+            has_symptoms = any(word in text for word in [
+                "symptom", "pain", "ache", "fever", "cough", "nausea", "dizzy",
+                "headache", "chest", "stomach", "throat", "ear", "breathing",
+                "swelling", "rash", "bleeding", "fatigue", "weakness"
+            ])
+            
+            # Duration: look for time indicators
+            has_duration = any(word in text for word in [
+                "duration", "day", "days", "week", "weeks", "month", "months",
+                "hour", "hours", "minute", "minutes", "started", "began",
+                "ago", "since", "yesterday", "today", "recent"
+            ])
+            
+            # History: look for medical conditions OR explicit "none"/"no"
+            has_history = any(word in text for word in [
+                "history", "medical", "condition", "diabetes", "disease",
+                "hypertension", "blood pressure", "asthma", "allergy", "allergic",
+                "heart", "kidney", "liver", "cancer", "arthritis", "chronic",
+                "medication", "none", "no condition", "no medical", "healthy"
+            ])
             
             if has_symptoms and has_duration and has_history:
                 log_event("intake_validation", "text dossier validated with history")
