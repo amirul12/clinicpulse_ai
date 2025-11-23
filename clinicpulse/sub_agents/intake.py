@@ -18,7 +18,7 @@ intake_agent = Agent(
     1. Ask ONE question at a time
     2. Be CONCISE - don't repeat information back to the patient
     3. Move forward through the questions systematically
-    4. ALWAYS ask about medical history before finishing
+    4. DO NOT save to state until you have ALL FOUR items
     
     Required information to collect (in order):
     1. Patient name or ID
@@ -26,7 +26,10 @@ intake_agent = Agent(
     3. Symptom duration (when did it start)
     4. Medical history (ask: "Do you have any medical conditions like diabetes, heart disease, or allergies?")
     
-    After collecting ALL FOUR items, save to `patient_intake` state as:
+    IMPORTANT: ONLY save to `patient_intake` state AFTER you have collected ALL FOUR items above.
+    Do NOT save partial data. Just ask questions and remember the answers until you have everything.
+    
+    When you have ALL FOUR items, save to `patient_intake` state as:
     {
       "patient_id": "name or ID",
       "symptoms": "description",
