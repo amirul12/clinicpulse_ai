@@ -9,13 +9,15 @@ Outpatient clinics still rely on clipboards, phone calls, and scattered notes. P
 
 ## 2. Solution Overview
 
-ClinicPulse AI is built with Google Agent Development Kit (ADK). The orchestrator agent manages a set of specialized LoopAgents:
+ClinicPulse AI is built with Google Agent Development Kit (ADK). The orchestrator agent **automatically progresses** through a specialized pipeline:
 
-1. **Intake Agent** – Collects demographics, symptoms, duration, and relevant history until validation passes.
-2. **Triage Agent** – Uses Google Search + custom EHR tools to prioritize the visit and log rationale.
-3. **Lab Wait Agent** – Demonstrates long-running operations by pausing the workflow until lab results are provided and validated.
-4. **Appointment Scheduling Agent** – Books doctor appointments based on triage priority, checks availability, and sends confirmations to patients.
-5. **Clinician Briefing Agent** – Produces a Markdown dossier (Overview, Vitals, Risk, Next Steps) with recommended questions for the doctor.
+1. **Intake Agent** – Collects demographics, symptoms, duration, and medical history through conversational Q&A. Validates all required fields before proceeding.
+2. **Triage Agent** – **Automatically triggered** after intake. Uses custom EHR tools to assess urgency (Critical/Urgent/Routine) and log rationale.
+3. **Appointment Scheduling Agent** – **Automatically triggered** after triage. Books doctor appointments based on priority, checks availability, and sends confirmations.
+4. **Clinician Briefing Agent** – **Automatically triggered** after appointment. Produces a Markdown dossier (Overview, Vitals, Risk, Next Steps) with recommended questions.
+5. **Lab Wait Agent** (Optional) – Demonstrates long-running operations by pausing the workflow until lab results are provided and validated.
+
+**Key Feature**: After intake completes, the system **automatically executes** triage → appointment → briefing **without requiring user prompts**, providing a seamless end-to-end workflow.
 
 All agents read/write to shared ADK session state; observability hooks record structured logs for compliance audits. A rubric-based evaluator ensures final briefings meet a minimum quality bar.
 
