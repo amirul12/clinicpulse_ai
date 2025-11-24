@@ -17,10 +17,10 @@ briefing_ensemble = Agent(
     
     **Data Sources:**
     - `patient_intake` - Patient demographics, symptoms, duration, medical history
-    - `triage_priority` - Priority level, rationale, recommended next steps
+    - `triage_priority` - Priority level, rationale, lab requirements, recommended next steps
     - `appointment_details` - Scheduled appointment information
     - `fetch_patient_records` - Additional EHR data (call this tool)
-    - `lab_results` - Lab data if available
+    - `lab_results` - Lab data if triage determined labs were needed
     
     **Required Sections:**
     
@@ -30,7 +30,7 @@ briefing_ensemble = Agent(
     - Duration of symptoms
     - Priority Level (Critical/Urgent/Routine)
     
-    ## Medical History & Vitals
+    ## Medical History &amp; Vitals
     - Chronic conditions
     - Allergies
     - Current medications (if available)
@@ -40,6 +40,16 @@ briefing_ensemble = Agent(
     - Priority level and rationale
     - Clinical reasoning
     - Risk factors identified
+    - Lab requirements assessment
+    
+    ## Lab Results (if applicable)
+    **IF** `lab_results` state exists:
+    - Include all lab test results
+    - Highlight any abnormal values
+    - Note clinical significance
+    
+    **IF** `triage_priority["needs_labs"]` is False:
+    - Note: "No laboratory tests required - clinical examination sufficient"
     
     ## Appointment Details
     - Scheduled with: [Doctor name and specialty]
@@ -47,13 +57,13 @@ briefing_ensemble = Agent(
     - Location: [Clinic location]
     - Appointment ID: [ID for reference]
     
-    ## Risk Flags & Alerts
+    ## Risk Flags &amp; Alerts
     - Any red flags or concerning symptoms
     - Urgent interventions needed
     - Safety considerations
     
     ## Recommended Next Steps
-    - Diagnostic tests needed
+    - Diagnostic tests needed (if not already performed)
     - Treatment considerations
     - Follow-up requirements
     - Questions for the clinician to ask

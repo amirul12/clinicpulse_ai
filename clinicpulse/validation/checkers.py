@@ -86,18 +86,41 @@ class TriageValidationChecker(BaseAgent):
         self, context: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         triage_decision = context.session.state.get("triage_priority")
-        if triage_decision:
+        if not triage_decision:
+            log_event("triage_validation", "triage pending")
+            yield Event(author=self.name)
+            return
+            
+        patient_id = (
+            triage_decision.get("patient_id")
+            if hasattr(triage_decision, "get")
+            else None
+        )
+        
+        # Check if needs_labs field is present (recommended but not required for backward compatibility)
+        if hasattr(triage_decision, "get"):
+            needs_labs = triage_decision.get("needs_labs")
+            if needs_labs is not None:
+                log_event(
+                    "triage_validation",
+                    f"triage priority available with lab decision: needs_labs={needs_labs}",
+                    patient_id,
+                )
+            else:
+                log_event(
+                    "triage_validation",
+                    "triage priority available (needs_labs field missing - defaulting to false)",
+                    patient_id,
+                )
+        else:
             log_event(
                 "triage_validation",
                 "triage priority available",
-                triage_decision.get("patient_id")
-                if hasattr(triage_decision, "get")
-                else None,
+                patient_id,
             )
-            yield Event(author=self.name, actions=EventActions(escalate=True))
-            return
-        log_event("triage_validation", "triage pending")
-        yield Event(author=self.name)
+        
+        yield Event(author=self.name, actions=EventActions(escalate=True))
+
 
 
 class LabResultsValidationChecker(BaseAgent):
